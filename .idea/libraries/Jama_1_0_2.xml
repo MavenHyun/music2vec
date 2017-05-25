@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Jama-1.0.2">
+    <CLASSES>
+      <root url="jar://$APPLICATION_HOME_DIR$/lib/Jama-1.0.2.jar!/" />
+      <root url="jar://$APPLICATION_HOME_DIR$/lib/lingpipe-4.1.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
