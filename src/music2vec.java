@@ -8,9 +8,10 @@ import java.util.*;
 import com.aliasi.tokenizer.*;
 import com.aliasi.tokenizer.TokenizerFactory;
 import Jama.Matrix;
-
-
-
+import org.jsoup.*;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 
 public class music2vec
@@ -254,11 +255,81 @@ public class music2vec
         result = output_vector();
         for (String word : vocab_table.keySet())
         {
-            System.out.print(String.format("Cosine Similarity: %10f\t", cosine_sim(result, vectorize(word))));
+            System.out.print(String.format("Cosine Similarity: %20f\t", cosine_sim(result, vectorize(word))));
             System.out.println("V: " + V + " C: " + C + " N: " + N + " Learning Rate: " + L + " # of Negative Samples " + G + " " + word);
         }
     }
 
+
+    public void song_crawl()
+    {
+        Document doc;
+        String alpha = "abcdefghijklmnopqrstuvwxyz";
+        char[] alpha_array = alpha.toCharArray();
+        for (char letter : alpha_array)
+        {
+            try {
+                doc = Jsoup.connect("http://www.azlyrics.com/" + letter + ".html").get();
+                Elements list = doc.getElementsByClass("col-sm-6 text-center artist-col");
+                for (Element sublist : list)
+                {
+                    for (Element item : sublist.select("a"))
+                    {
+                        String song_artist = item.text();
+                        String link = item.attr("href");
+                        try {
+                            doc = Jsoup.connect("http://www.azlyrics.com/"+link).get();
+                            Element albums = doc.getElementById("listAlbum");
+                            for (Element album : albums.select("a"))
+                            {
+
+                                String link2 = album.attr("href");
+                                link2 = link2.replace("..", "");
+                                try {
+                                    doc = Jsoup.connect("http://www.azlyrics.com"+link2).get();
+                                    Elements contents = doc.getElementsByClass("col-xs-12 col-lg-8 text-center");
+                                    Element lyrics = contents.select("div").get(7);
+                                    Element title = contents.select("b").get(0);
+                                    String song_title = title.text();
+                                    String song_lyric = lyrics.text();
+                                    song_lyrics.add(song_lyric);
+                                    song_table.put(song_lyric, song_artist + " " + song_title);
+                                    vocab_table.put(song_artist + " " + song_title, vocab_table.size());
+                                    int i = 0;
+                                } catch (Exception e) {}
+                            }
+                        } catch (Exception e) {}
+                    }
+
+
+
+
+
+
+
+
+                }
+
+
+
+
+
+
+
+            } catch (Exception e) {}
+
+
+
+
+        }
+
+
+
+
+
+
+
+    }
 
 
 
