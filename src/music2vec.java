@@ -27,7 +27,7 @@ public class music2vec
     public Map<String, Integer> vocab_table = new HashMap<String, Integer>();
     public Map<String, String> song_table = new HashMap<String, String>();
     public Map<String, Integer> vocab_num = new HashMap<String, Integer>();
-    public ArrayList<String> vocab_neg = new ArrayList<String>(100000);
+    public Map<String, Double> vocab_neg = new HashMap<String, Double>();
     public ArrayList<String> song_lyrics = new ArrayList<String>();
     public ArrayList<String> context_words = new ArrayList<String>();
     public ArrayList<String> negative_words = new ArrayList<String>();
@@ -110,8 +110,7 @@ public class music2vec
         for (String word: vocab_num.keySet())
         {
             double prob = (double) vocab_num.get(word) / sum;
-            int iter = (int) Math.ceil(100000 * prob);
-            for (int i = 0; i < iter; i++) vocab_neg.add(word);
+            vocab_neg.put(word, prob);
         }
     }
 
@@ -155,21 +154,27 @@ public class music2vec
 
     public void negative_sampling(String word) /*target word is the title + artist format string*/
     {
-        Random rand = new Random();
+        double rand = new Random().nextDouble() / 10.0;
         int loop = G;
         while (loop != 0)
         {
-            int index = rand.nextInt(100000) + 1;
-            if (negative_words.contains(vocab_neg.get(index)))
+            double cumulative = 0.0;
+            for (String neg : vocab_neg.keySet())
             {
-                negative_words.add(vocab_neg.get(index));
-                loop--;
+                cumulative += vocab_neg.get(neg);
+                if (!negative_words.contains(neg)&&(cumulative >= rand)&&(!neg.contains(word)))
+                {
+                    negative_words.add(neg);
+                    loop--;
+                    break;
+                }
             }
         }
     }
 
     public void update_hidden2output(String word, int column2)
     {
+        negative_sampling(word);
         error = output_vector().minusEquals(vectorize(word));
         for (String neg : negative_words)
         {
@@ -222,9 +227,11 @@ public class music2vec
                         context_words.add(lyrics_words.get(j));
                     }
                     update_input2hidden(song_table.get(lyric_set));
+                    context_words.clear();
+                    negative_words.clear();
                 }
-                context_words.clear();
             }
+            System.out.println("남은 횟수: " + (iter - count));
         }
     }
 
@@ -300,46 +307,10 @@ public class music2vec
                             }
                         } catch (Exception e) {}
                     }
-
-
-
-
-
-
-
-
                 }
-
-
-
-
-
-
-
             } catch (Exception e) {}
-
-
-
-
         }
-
-
-
-
-
-
-
     }
-
-
-
-
-
-
-
-
-
-
 }
 
 
