@@ -251,22 +251,35 @@ public class music2vec
 
     public void retrieve(String text)
     {
+        System.out.println("Vocabulary Size: " + V + " Window Size: " + C + " # of Neurons: " + N + " Learning Rate: " + L + " # of Negative Samples " + G);
         factory = new IndoEuropeanTokenizerFactory();
         LowerCaseTokenizerFactory low = new LowerCaseTokenizerFactory(factory);
         EnglishStopTokenizerFactory stop = new EnglishStopTokenizerFactory(factory);
         PorterStemmerTokenizerFactory stem = new PorterStemmerTokenizerFactory(factory);
+        Tokenization tokens = new Tokenization(text, factory);
 
-        String target = stem.modifyToken(stop.modifyToken(low.modifyToken(text)));
-        context_words.add(target);
+        for (String token : tokens.tokens())
+        {
+            try {
+                String target = stem.modifyToken(stop.modifyToken(low.modifyToken(token)));
+                if ((vocab_table.containsKey(target))&&(!context_words.contains(target))) context_words.add(target);
+            } catch (Exception e) { }
+        }
+
+        Map<String, Double> temp = new HashMap<String, Double>();
         Matrix result = new Matrix(V, 1);
         result = output_vector();
         for (String word : vocab_table.keySet())
         {
-            System.out.print(String.format("Cosine Similarity: %20f\t", cosine_sim(result, vectorize(word))));
-            System.out.println("V: " + V + " C: " + C + " N: " + N + " Learning Rate: " + L + " # of Negative Samples " + G + " " + word);
+            temp.put(word, cosine_sim(result, vectorize(word)));
+        }
+
+        for (String word : temp.keySet())
+        {
+            System.out.print(String.format("Cosine Similarity: %20f\t", temp.get(word)));
+            System.out.println(text + "\t" + word);
         }
     }
-
 
     public void song_crawl()
     {
@@ -310,6 +323,7 @@ public class music2vec
                 }
             } catch (Exception e) {}
         }
+        for (String song : song_table.keySet())  System.out.println(song + "\t" + song_table.get(song));
     }
 }
 

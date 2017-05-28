@@ -3,14 +3,14 @@
  */
 public class main {
     public static void main(String[] args) throws Exception {
-        music2vec maven = new music2vec(8, 300, 0.001, 5); /* C, N , learning_rate*/
+        music2vec maven = new music2vec(6, 150, 0.001, 5); /* C, N , learning_rate*/
         maven.song_collect();
         maven.song_tokenize();
         maven.song_negative();
-        maven.train_feed(200);
-        maven.retrieve("lucky");
+        maven.train_feed(1000);
+        maven.retrieve("I have a good feeling that we could get lucky if we raise our cup to the stars");
 
-        /*maven.song_crawl();*/
+        maven.song_crawl();
 
         return;
     }
